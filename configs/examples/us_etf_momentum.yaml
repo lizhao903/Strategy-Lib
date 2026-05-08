@@ -1,0 +1,23 @@
+# 美股 ETF 多因子轮动
+name: us_etf_momentum
+market: us_stock
+
+universe:
+  symbols: [SPY, QQQ, IWM, EFA, EEM, GLD, TLT, XLK, XLE, XLV]
+  timeframe: 1d
+  since: 2018-01-01
+
+strategy:
+  type: cs_rank
+  factors:
+    - name: mom_return
+      params: { lookback: 60, skip: 5 }
+      weight: 1.0
+  signal:
+    top_n: 3
+    rebalance: 20
+
+backtest:
+  init_cash: 10000
+  fees: 0.0005
+  slippage: 0.0005

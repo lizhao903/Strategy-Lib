@@ -1,0 +1,27 @@
+# S8 v1: A股 ETF 港股+海外+黄金 4 池等权（无 A 股）
+# 起源：universe_sweep_demo 4×4 grid 揭示 overseas_4 池在 4 策略上一致打爆其他 universe
+# 复用 EqualRebalanceStrategy（无新策略类），仅 universe 切换
+
+name: cn_etf_overseas_equal
+market: cn_etf
+
+universe:
+  symbols:
+    - "159920"   # 恒生 ETF（港股代理）
+    - "513100"   # 纳指 ETF
+    - "513500"   # 标普500 ETF
+    - "518880"   # 黄金 ETF
+  timeframe: 1d
+  since: 2019-09-01      # 提供 ~120 日暖机以保证 2020-01-02 起绩效统计
+  until: 2024-12-31
+
+strategy:
+  type: equal_rebalance     # 复用 S3 同款类
+  factors: []               # 无因子
+  signal:
+    rebalance_period: 20    # 月度
+
+backtest:
+  init_cash: 100000
+  fees: 0.00005
+  slippage: 0.0005

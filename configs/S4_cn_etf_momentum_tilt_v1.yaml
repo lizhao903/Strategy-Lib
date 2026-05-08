@@ -1,0 +1,43 @@
+# Strategy 4 — A股 ETF 等权 + 动量倾斜
+# Benchmark Suite V1：在 Strategy 3（cn_etf_equal_rebalance）基础上，按动量 z-score
+# 把权重从 1/N 线性倾斜，clip 到 [w_min, w_max] 再归一化；100% 满仓、无现金缓冲。
+name: cn_etf_momentum_tilt
+market: cn_etf
+
+universe:
+  symbols:
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+  timeframe: 1d
+  since: 2020-01-01
+  until: 2024-12-31
+
+benchmark: "510300"
+
+strategy:
+  type: momentum_tilt          # 由 MomentumTiltStrategy 处理
+  parent: cn_etf_equal_rebalance  # 显式声明派生关系（S3）
+  rebalance: 20                 # 与 S3 默认一致：每 20 个交易日再平衡
+  tilt:
+    method: zscore_linear       # rank | zscore_linear | exp
+    alpha: 1.0                  # 倾斜强度：raw_w = 1/N + alpha * z / N
+    w_min: 0.05
+    w_max: 0.40
+  factors:
+    - name: mom_return
+      params: { lookback: 20 }
+      role: primary
+    # 可选：启用二级动量（取消注释即生效；MomentumTiltStrategy.secondary_lookback=60）
+    # - name: mom_return
+    #   params: { lookback: 60 }
+    #   role: secondary
+
+backtest:
+  init_cash: 100000
+  fees: 0.00005       # 佣金 万 0.5
+  slippage: 0.0005    # 滑点 万 5
+  freq: 1d

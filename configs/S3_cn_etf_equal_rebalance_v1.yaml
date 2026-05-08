@@ -1,0 +1,42 @@
+# Strategy 3 — A股 ETF 等权 + 定时再平衡（Benchmark Suite V1）
+#
+# 6 只 ETF 等权满仓，每 20 个交易日（约月度）再平衡回等权。
+# 无现金、无货币基金、无因子倾斜——是 S4/S5 的对照基线。
+#
+# 类型为 weight_based（非现有 single_threshold / cs_rank），
+# 由 strategy_lib.strategies.cn_etf_equal_rebalance.EqualRebalanceStrategy 直接消费。
+name: cn_etf_equal_rebalance
+market: cn_etf
+
+universe:
+  symbols:
+    - "510300"   # 沪深300
+    - "510500"   # 中证500
+    - "159915"   # 创业板
+    - "512100"   # 中证1000
+    - "512880"   # 证券
+    - "512170"   # 医疗
+  timeframe: 1d
+  since: "2020-01-01"
+  until: "2024-12-31"
+
+strategy:
+  type: weight_based
+  class: strategy_lib.strategies.cn_etf_equal_rebalance.EqualRebalanceStrategy
+  params:
+    # 日历再平衡周期（交易日）。候选 {5, 10, 20, 60}，默认 20。
+    rebalance_period: 20
+    # 漂移阈值；null = 纯日历再平衡（V1 默认）。可选 0.03 / 0.05 / 0.10。
+    drift_threshold: null
+
+backtest:
+  # V1 共享基线（不要修改，需与 S1/S2/S4/S5 保持一致）
+  init_cash: 100000
+  fees: 0.00005      # 佣金 万 0.5
+  slippage: 0.0005   # 滑点 万 5
+  benchmark: "510300"
+
+# 敏感性扫描（validation 阶段使用，不影响默认回测）
+sensitivity:
+  rebalance_period: [5, 10, 20, 60]
+  drift_threshold: [null, 0.03, 0.05, 0.10]

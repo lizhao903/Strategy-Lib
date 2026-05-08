@@ -1,0 +1,34 @@
+# A股 ETF 多因子轮动：每 5 日选因子分前 30% 的 ETF 等权持有
+name: cn_etf_rotation
+market: cn_etf
+
+universe:
+  symbols:
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+    - "515030"   # 新能源车 ETF
+    - "159825"   # 农业 ETF
+  timeframe: 1d
+  since: 2021-01-01
+
+strategy:
+  type: cs_rank
+  factors:
+    - name: mom_return
+      params: { lookback: 20 }
+      weight: 0.5
+    - name: realized_vol
+      params: { lookback: 20 }
+      weight: 0.5
+  signal:
+    top_pct: 0.3
+    rebalance: 5
+
+backtest:
+  init_cash: 100000
+  fees: 0.0005
+  slippage: 0.001

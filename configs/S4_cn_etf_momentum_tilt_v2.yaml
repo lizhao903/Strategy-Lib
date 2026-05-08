@@ -1,0 +1,56 @@
+# Strategy 4 v2 — A股 ETF 等权 + 动量倾斜（v2 改进版）
+# 关键差异 vs v1：
+#   1) 扩池 6 → 11（加 港股/黄金/纳指/标普500/十年国债 ETF）
+#   2) 显式 shift(1)：target_weights 用 index < date 严格小于切片
+#   3) 更长 lookback + skip：120 日 + skip=5（季度趋势 + 跳过短期反转）
+#   4) 边界对称放宽到 [0.03, 0.30]（N=11 时 1/N≈0.091）
+name: cn_etf_momentum_tilt_v2
+market: cn_etf
+
+universe:
+  symbols:
+    # A股 6 只（与 v1 一致）
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+    # 跨资产 5 只（v2 新增 — 提升横截面分散度）
+    - "159920"   # 恒生 ETF（港股代理）
+    - "518880"   # 黄金 ETF（商品/避险）
+    - "513100"   # 纳指 ETF（美股科技）
+    - "513500"   # 标普500 ETF（美股宽基）
+    - "511260"   # 十年国债 ETF（利率/防御）
+  timeframe: 1d
+  since: 2020-01-01
+  until: 2024-12-31
+
+benchmark: "510300"
+
+strategy:
+  type: momentum_tilt_v2          # 由 MomentumTiltV2Strategy 处理
+  parent: cn_etf_equal_rebalance  # 沿用 S3 的 build_target_weight_panel + run
+  rebalance: 20
+  tilt:
+    method: zscore_linear
+    alpha: 1.0
+    w_min: 0.03
+    w_max: 0.30
+  signal:
+    type: raw                # raw | vol_adj
+    vol_lookback: 60         # 仅 vol_adj 模式有效
+  factors:
+    - name: mom_return
+      params: { lookback: 120, skip: 5 }
+      role: primary
+    # 可选二级（取消注释生效）
+    # - name: mom_return
+    #   params: { lookback: 60, skip: 5 }
+    #   role: secondary
+
+backtest:
+  init_cash: 100000
+  fees: 0.00005
+  slippage: 0.0005
+  freq: 1d

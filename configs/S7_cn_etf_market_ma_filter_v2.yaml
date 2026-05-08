@@ -1,0 +1,39 @@
+# S7 v2: lag=1 默认 + 11 跨资产 ETF 池
+# 来源：v1 sensitivity 已证 lag=1 是 4 档中唯一显著跑赢 S3 的（NAV 119.1k / Sharpe 0.30）
+# 11 池：继承 S4v2 扩池发现（73% alpha 来自池本身）
+
+name: cn_etf_market_ma_filter_v2
+market: cn_etf
+
+universe:
+  symbols:
+    # 6 原始 V1 池
+    - "510300"   # 沪深300
+    - "510500"   # 中证500
+    - "159915"   # 创业板
+    - "512100"   # 中证1000
+    - "512880"   # 证券
+    - "512170"   # 医疗
+    # 5 跨资产扩展（来自 S4v2 已验证）
+    - "159920"   # 恒生 ETF（港股代理）
+    - "518880"   # 黄金 ETF
+    - "513100"   # 纳指 ETF
+    - "513500"   # 标普500 ETF
+    - "511260"   # 十年国债 ETF
+    - "511990"   # 货币基金（cash for OFF）
+  timeframe: 1d
+  since: 2019-07-01      # 200MA 暖机
+  until: 2024-12-31
+
+strategy:
+  type: market_ma_filter_v2
+  signal:
+    signal_symbol: "510300"
+    ma_length: 200
+    lag_days: 1            # v2 主参数（vs v1 默认 2）
+    weight_mode: equal     # 11 池等权 1/11
+
+backtest:
+  init_cash: 100000
+  fees: 0.00005
+  slippage: 0.0005

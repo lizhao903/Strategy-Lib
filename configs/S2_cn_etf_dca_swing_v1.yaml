@@ -1,0 +1,52 @@
+# Strategy 2 — A股 ETF DCA + 阈值再平衡（做T）
+# 共享基线见 docs/benchmark_suite_v1.md
+name: cn_etf_dca_swing
+market: cn_etf
+slug: cn_etf_dca_swing
+
+universe:
+  cash_symbol: "511990"          # 华宝添益（场内货基，T+0）
+  risk_symbols:
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+  timeframe: 1d
+  since: 2020-01-01
+  until: 2024-12-31
+
+strategy:
+  # 该 type 不在 strategies/registry.py 注册（避免修改 registry，按硬约束要求）
+  # 直接由 summaries/cn_etf_dca_swing/validate.py 实例化 DCASwingStrategy
+  type: dca_swing
+  params:
+    risk_target_weight: 0.70     # 风险池合计 70%；货基 30%
+    monthly_dca_amount: 5000.0   # 每月净流入 RMB
+    rel_band: 0.20               # 相对偏离阈值（±20%）
+    adjust_ratio: 0.50           # 单次拉回 50%
+    cooldown_days: 5             # 同一标的 5 个交易日防抖
+
+backtest:
+  init_cash: 100000              # 共享基线
+  fees: 0.00005                  # 万 0.5
+  slippage: 0.0005               # 万 5
+  benchmark: "510300"            # 与基准买入持有对比
+
+reporting:
+  compare_with:
+    - cn_etf_dca_basic           # S1 — 同结构 DCA 但无再平衡
+    - cn_etf_equal_rebalance     # S3 — 等权定时再平衡（无现金缓冲）
+  yearly_breakdown: [2020, 2021, 2022, 2023, 2024]
+  metrics:
+    - total_return
+    - annual_return
+    - annual_vol
+    - sharpe
+    - max_drawdown
+    - calmar
+    - turnover
+    - alpha_vs_benchmark
+    - information_ratio
+    - tracking_error

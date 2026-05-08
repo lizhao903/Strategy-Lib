@@ -1,0 +1,72 @@
+# Strategy 2 V2 — A股 ETF DCA + 阈值再平衡（做T） V2
+# 在 v1 共享基线上修复「DCA 净流入推权重 → 高抛远多于低吸」的结构性偏差
+# 共享基线见 docs/benchmark_suite_v1.md
+name: cn_etf_dca_swing_v2
+market: cn_etf
+slug: cn_etf_dca_swing_v2
+parent_slug: cn_etf_dca_swing  # v1
+
+universe:
+  cash_symbol: "511990"          # 华宝添益（场内货基，T+0）
+  risk_symbols:
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+  timeframe: 1d
+  since: 2020-01-01
+  until: 2024-12-31
+
+strategy:
+  # 该 type 不在 strategies/registry.py 注册（避免修改 registry，按硬约束要求）
+  # 直接由 summaries/S2_cn_etf_dca_swing/v2/validate.py 实例化 DCASwingV2Strategy
+  type: dca_swing_v2
+  params:
+    # 与 v1 共享的部分（不变）
+    risk_target_weight: 0.70     # 风险池合计 70%；货基 30%
+    monthly_dca_amount: 5000.0   # 每月净流入 RMB（NORMAL 模式）
+    adjust_ratio: 0.50           # swing 单次拉回比例
+    cooldown_days: 5             # 同一标的 5 日防抖
+    # v2 新增 — DCA 优先回流（A）
+    dca_band_high: 0.05          # w_risk > target × 1.05 → DCA OFF
+    dca_band_low: 0.05           # w_risk < target × 0.95 → DCA BOOST
+    dca_boost_factor: 1.5        # BOOST 时金额放大 1.5×（即 7500）
+    # v2 新增 — 波动率自适应阈值（C）
+    vol_lookback: 60             # 60 个交易日 NAV 实现波动率
+    vol_band_coef: 0.60          # band_t = clip(0.6 × vol_ann, ...)
+    vol_band_min: 0.10           # 下限：低波时最敏感不超过 ±10%
+    vol_band_max: 0.30           # 上限：高波时最宽容不超过 ±30%
+    warmup_band: 0.20            # 前 60 日 warmup 期固定阈值（与 v1 一致）
+
+backtest:
+  init_cash: 100000              # 共享基线
+  fees: 0.00005                  # 万 0.5
+  slippage: 0.0005               # 万 5
+  benchmark: "510300"            # 与基准买入持有对比
+
+reporting:
+  compare_with:
+    - cn_etf_dca_swing           # v1 head-to-head
+    - cn_etf_dca_basic           # S1
+  yearly_breakdown: [2020, 2021, 2022, 2023, 2024]
+  metrics:
+    - total_return
+    - annual_return
+    - annual_vol
+    - sharpe
+    - max_drawdown
+    - calmar
+    - turnover
+    - alpha_vs_benchmark
+    - information_ratio
+    - tracking_error
+  v2_specific:
+    - n_dca_normal
+    - n_dca_off
+    - n_dca_boost
+    - band_mean
+    - band_min
+    - band_max
+    - swing_buy_sell_ratio

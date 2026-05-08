@@ -1,0 +1,71 @@
+# Strategy 5 v2 — A股 ETF 等权 + 趋势倾斜（连续现金 + 波动率过滤）
+# v1 的两大问题：
+#   - 现金占比双峰（任一 trend>cutoff 即满仓）→ 改用「连续 ramp / N」权重
+#   - 避险命题未兑现（cash 与 BH 跌相关性 0.033）→ 加波动率过滤强制降仓
+# v2 仍然依赖 v1 验证过的 vbt sum<1 兼容性（targetpercent + cash_sharing 自动留现金）
+
+name: cn_etf_trend_tilt_v2
+market: cn_etf
+
+universe:
+  symbols:
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+    - "511260"   # 十年国债 ETF（v2 的 bond_symbol，可选）
+  timeframe: 1d
+  since: 2019-07-01
+  benchmark: "510300"
+
+strategy:
+  type: trend_tilt_v2
+  base: cn_etf_trend_tilt              # 直接继承 v1 的 TrendTiltStrategy
+  rebalance_period: 20
+  drift_threshold: null
+
+  trend:
+    ma_short: 20
+    ma_mid: 60
+    ma_long: 120
+    donchian_lookback: 120
+    score_weights: [1.0, 1.0]
+    cutoff: 0.0
+    use_continuous_score: true         # 用 MABullishContinuous 替代 sign() 离散版
+    score_full: 1.0                    # ramp 饱和点：score ≥ 1.0 时该 ETF 拿 1/N
+
+  vol_filter:
+    vol_lookback: 60                   # 60 日年化波动
+    vol_high: 0.30                     # 年化 30% 视作「高波」
+    vol_breadth_threshold: 0.5         # 池中 ≥ 50% 高波时触发
+    vol_haircut: 0.5                   # 触发后全体权重 × 0.5
+
+  bond_overlay:
+    bond_symbol: "511260"              # 现金缺口填充十年国债 ETF
+    bond_max_weight: 0.4               # bond 占比上限 40%
+
+backtest:
+  init_cash: 100000
+  start: "2020-01-01"
+  end: "2024-12-31"
+  fees: 0.00005
+  slippage: 0.0005
+  freq: "1D"
+  signal_lag: 1
+
+metrics:
+  - cagr
+  - annualized_volatility
+  - sharpe
+  - max_drawdown
+  - calmar
+  - turnover_annualized
+  - excess_return_vs_benchmark
+  - information_ratio
+  - tracking_error
+  - yearly_returns
+  - cash_days_ratio
+  - cash_continuous_distribution        # v2 关键：现金比例分布是否连续
+  - cash_vs_bh_neg_corr                 # v2 关键：避险命题验证

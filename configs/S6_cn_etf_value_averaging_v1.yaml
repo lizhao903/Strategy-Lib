@@ -1,0 +1,66 @@
+# Strategy 6 — A股 ETF 价值平均法（Value Averaging, VA）
+# 跳出 DCA 框架（S1/S2/S2v2）：按目标 NAV 路径定投，机制层天然对称
+# 共享基线见 docs/benchmark_suite_v1.md
+name: cn_etf_value_averaging
+market: cn_etf
+slug: cn_etf_value_averaging
+
+universe:
+  cash_symbol: "511990"          # 华宝添益（场内货基，T+0）
+  risk_symbols:
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+  timeframe: 1d
+  since: 2020-01-01
+  until: 2024-12-31
+
+strategy:
+  # 该 type 不在 strategies/registry.py 注册（避免修改 registry，按硬约束要求）
+  # 直接由 summaries/S6_cn_etf_value_averaging/v1/validate.py 实例化 ValueAveragingStrategy
+  type: value_averaging
+  params:
+    # 核心：目标路径函数
+    target_path_kind: compound       # compound（默认 B）/ linear（A）/ compound_floor（C）
+    cagr_target: 0.08                # 目标年化（B 路径核心旋钮，4 档敏感性 6/8/10/12%）
+    # 风控边界
+    max_buy_per_period: 15000.0      # 单月最大买入 RMB
+    max_sell_per_period: 15000.0     # 单月最大卖出 RMB
+    min_action_amount: 500.0         # 单月动作下限（< 此则跳过）
+
+backtest:
+  init_cash: 100000                  # 共享基线
+  fees: 0.00005                      # 万 0.5
+  slippage: 0.0005                   # 万 5
+  benchmark: "510300"                # 与基准买入持有对比
+
+reporting:
+  compare_with:
+    - cn_etf_dca_basic               # S1 v1
+    - cn_etf_dca_swing               # S2 v1（核心 head-to-head）
+    - cn_etf_dca_swing_v2            # S2 v2（已 shelved，作 v2 失败案例参考）
+  yearly_breakdown: [2020, 2021, 2022, 2023, 2024]
+  metrics:
+    - total_return
+    - annual_return
+    - annual_vol
+    - sharpe
+    - max_drawdown
+    - calmar
+    - turnover
+    - alpha_vs_benchmark
+    - information_ratio
+    - tracking_error
+  va_specific:
+    - n_buy_months
+    - n_sell_months
+    - n_skip_months
+    - n_noop_months
+    - buy_sell_ratio
+    - cash_exhausted_date
+    - final_target
+  sensitivity:
+    cagr_target: [0.06, 0.08, 0.10, 0.12]   # 4 档敏感性

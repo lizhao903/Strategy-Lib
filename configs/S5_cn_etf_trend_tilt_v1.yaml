@@ -1,0 +1,56 @@
+# Strategy 5：A股 ETF 等权 + 趋势倾斜
+# 继承 S3 (cn_etf_equal_rebalance)，按 MA 多头排列 + Donchian 通道位置调整权重
+# 趋势分数 <= 0 的 ETF 直接空仓（弱趋势退出）
+
+name: cn_etf_trend_tilt
+market: cn_etf
+
+universe:
+  symbols:
+    - "510300"   # 沪深300 ETF
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+  timeframe: 1d
+  since: 2019-07-01   # 多拉 6 个月数据用于 MA120 / Donchian 暖机
+  benchmark: "510300"
+
+strategy:
+  type: trend_tilt              # 在 strategies/registry.py 合并时注册
+  base: cn_etf_equal_rebalance  # 继承的父策略 slug
+  rebalance_period: 20          # 与 S3 一致：约月度再平衡
+  drift_threshold: null         # 纯日历再平衡
+
+  # 趋势倾斜参数
+  trend:
+    ma_short: 20
+    ma_mid: 60
+    ma_long: 120
+    donchian_lookback: 120
+    score_weights: [1.0, 1.0]   # MA 得分 vs Donchian 位置等权
+    cutoff: 0.0                 # trend_score <= 0 视为空仓
+
+backtest:
+  init_cash: 100000
+  start: "2020-01-01"
+  end: "2024-12-31"
+  fees: 0.00005      # 万 0.5
+  slippage: 0.0005   # 万 5
+  freq: "1D"
+  signal_lag: 1      # 当日信号次日开盘成交，避免未来函数
+
+# 验证统一指标（与 V1 基线对齐）
+metrics:
+  - cagr
+  - annualized_volatility
+  - sharpe
+  - max_drawdown
+  - calmar
+  - turnover_annualized
+  - excess_return_vs_benchmark
+  - information_ratio
+  - tracking_error
+  - yearly_returns
+  - cash_days_ratio   # S5 特有：全空仓天数占比

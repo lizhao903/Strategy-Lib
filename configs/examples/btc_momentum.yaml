@@ -1,0 +1,28 @@
+# 单标的择时：BTC 日线动量 + 反转辅助
+name: btc_momentum
+market: crypto
+
+universe:
+  symbols:
+    - BTC/USDT
+  timeframe: 1d
+  since: 2020-01-01
+
+strategy:
+  type: single_threshold
+  factors:
+    - name: mom_return
+      params: { lookback: 20 }
+      weight: 0.7
+    - name: rsi_reversal
+      params: { period: 14 }
+      weight: 0.3
+  signal:
+    long_threshold: 0.3
+    short_threshold: -0.3
+    allow_short: false
+
+backtest:
+  init_cash: 10000
+  fees: 0.001
+  slippage: 0.0005

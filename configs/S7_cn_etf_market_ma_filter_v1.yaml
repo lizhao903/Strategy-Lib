@@ -1,0 +1,72 @@
+# Strategy 7：A股 ETF 大盘 MA 过滤（risk-on/off 单一开关）
+# 用 510300 (沪深300) 的 200 日均线作为单一信号决定全局二元仓位：
+#   - close_510300 > MA200_510300 (连续 lag_days 日) → 满仓 S3 等权 6 ETF
+#   - close_510300 ≤ MA200_510300 (连续 lag_days 日) → 全部转 511990 货币基金
+# Faber (2007) GTAA 简化版，是经典 risk-on/off 策略。
+#
+# vs S5 (cn_etf_trend_tilt v1+v2)：
+#   - S5 是 6 个独立逐标的趋势判断（信息冗余 + 假突破频繁）
+#   - S7 是 1 个市场代理（信号更稳、切换更少）
+# 命题：用大盘 timing 替代逐标的 timing，是否能改善避险（cash↔BH 跌相关性 / 2022 单年）
+
+name: cn_etf_market_ma_filter
+market: cn_etf
+
+universe:
+  symbols:
+    # Risk-on 时持仓的 risky pool（与 V1 baseline 6 池一致）
+    - "510300"   # 沪深300 ETF（同时是 signal_symbol）
+    - "510500"   # 中证500 ETF
+    - "159915"   # 创业板 ETF
+    - "512100"   # 中证1000 ETF
+    - "512880"   # 证券 ETF
+    - "512170"   # 医疗 ETF
+    # Risk-off 时持仓的 cash 等价物
+    - "511990"   # 华宝添益（场内货币基金 T+0）
+  timeframe: 1d
+  since: 2019-07-01    # 暖机 200MA（需要 ma_length-1 = 199 日预热）
+  benchmark: "510300"
+
+strategy:
+  type: market_ma_filter
+  signal_symbol: "510300"      # 大盘信号资产
+  cash_symbol: "511990"        # risk-off 时的现金等价
+  risky_symbols:
+    - "510300"
+    - "510500"
+    - "159915"
+    - "512100"
+    - "512880"
+    - "512170"
+  ma_length: 200               # 经典 Faber 200 日；同时跑 100/150/200/250 敏感性
+  lag_days: 2                  # 滞后过滤：连续 2 日同向才切换（=1 即无过滤）
+  weight_mode: equal           # risk-on 时 6 ETF 等权 1/6
+
+backtest:
+  init_cash: 100000
+  start: "2020-01-01"
+  end: "2024-12-31"
+  fees: 0.00005       # 万 0.5
+  slippage: 0.0005    # 万 5
+  freq: "1D"
+  signal_lag: 1       # 当日信号次日成交，避免未来函数
+
+# 验证统一指标（与 V1 基线对齐）
+metrics:
+  - cagr
+  - annualized_volatility
+  - sharpe
+  - max_drawdown
+  - calmar
+  - turnover_annualized
+  - excess_return_vs_benchmark
+  - information_ratio
+  - tracking_error
+  - yearly_returns
+  - cash_days_ratio                # 全 risk-off 天数占比
+  - switch_count                   # 切换次数（评估信号稳定性）
+  - cash_vs_bh_neg_corr            # cash↔BH 跌相关性（核心命题验证）
+
+sensitivity:
+  ma_length: [100, 150, 200, 250]
+  lag_days: [1, 2, 3, 5]
