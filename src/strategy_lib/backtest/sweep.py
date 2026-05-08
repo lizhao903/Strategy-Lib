@@ -69,11 +69,14 @@ def compute_perf_metrics(
     init_cash: float = 100_000,
     since: str | pd.Timestamp | None = None,
     until: str | pd.Timestamp | None = None,
+    trading_days_per_year: int = 252,
 ) -> dict:
     """从 NAV 时间序列算标准绩效指标。
 
     自动剪到 [since, until] 区间，归一化到起点 = init_cash。
     返回字段：final_nav_100k, cagr, vol_ann, sharpe, max_dd, calmar, yr_YYYY..., n_days.
+
+    ``trading_days_per_year``: 252 适合 A 股 / 美股 / ETF；365 适合 crypto 24/7。
     """
     nav = nav.dropna()
     if len(nav) < 5:
@@ -89,13 +92,16 @@ def compute_perf_metrics(
     nav_norm = nav / nav.iloc[0]  # 归一化到起点 = 1
     daily_ret = nav_norm.pct_change().dropna()
     n_days = len(nav_norm)
-    n_years = n_days / 252
+    n_years = n_days / trading_days_per_year
 
     final_norm = float(nav_norm.iloc[-1])
     cagr = final_norm ** (1 / n_years) - 1 if n_years > 0 else float("nan")
-    vol_ann = float(daily_ret.std() * np.sqrt(252)) if len(daily_ret) > 0 else float("nan")
+    vol_ann = (
+        float(daily_ret.std() * np.sqrt(trading_days_per_year))
+        if len(daily_ret) > 0 else float("nan")
+    )
     sharpe = (
-        float(daily_ret.mean() / daily_ret.std() * np.sqrt(252))
+        float(daily_ret.mean() / daily_ret.std() * np.sqrt(trading_days_per_year))
         if daily_ret.std() > 0
         else float("nan")
     )
@@ -165,7 +171,12 @@ def run_on_universe(
         result = strategy.run(panel)
 
     nav = _nav_from_result(result)
-    return compute_perf_metrics(nav, init_cash=init_cash, since=since, until=until)
+    # 按 universe.market 自动选年化天数：crypto 24/7 用 365，其他用 252
+    tdpy = 365 if universe.market == "crypto" else 252
+    return compute_perf_metrics(
+        nav, init_cash=init_cash, since=since, until=until,
+        trading_days_per_year=tdpy,
+    )
 
 
 # -----------------------------------------------------------------------------

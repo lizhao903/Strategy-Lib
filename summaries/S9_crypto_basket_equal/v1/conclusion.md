@@ -7,7 +7,7 @@ finalized: 2026-05-08
 # Conclusion — V2-S1 (S9) crypto_basket_equal
 
 ## 一句话结论
-**V1 的 S3 等权机制在 crypto 上 0 代码改动直接跑出 Sharpe 1.41 / CAGR +118%（vs BTC BH +84.84%/yr alpha）**——同一个机制跨市场普适，但**MaxDD -78.9% 是 V1 任何策略的 4 倍**，且大量 alpha 来自 2021 SOL 100x 单次事件，OOS 风险极高。
+**V1 的 S3 等权机制在 crypto 上 0 代码改动直接跑出 Sharpe 1.41 / CAGR +118%（vs BTC BH +84.84%/yr alpha）**——同一个机制跨市场普适。**NO_SOL ablation（2026-05-08 第二轮）修正**：去 SOL 后仍 CAGR +83.46% / Sharpe 1.195 / vs BTC BH +49.84%/yr，证明 alpha 不完全依赖 SOL（SOL 贡献 ~41% alpha，剩余 59% 来自等权再平衡机制本身）。但 OOS 风险仍极高（4 年样本 + crypto 极端 outlier 频繁）。
 
 ## 关键数据
 | | 值 |
@@ -56,9 +56,12 @@ finalized: 2026-05-08
 
 ## 后续动作
 
-- [ ] **优先 1**：跑 V2-S3 (BTC MA filter) 验证 timing 是否能避开 2022 -71% 单年回撤
-- [ ] **优先 2**：跑 V2-S4 (trend tilt) 看 sizing 在 crypto 高 vol 下是否真的有效（V1 S5v2 在 A 股是 vol-target sizing，crypto 高 vol 应当更适合）
-- [ ] **优先 3**：robustness 测试 —— 截 2022-01-01 起重跑（剔除 2021 SOL outlier）看 V2-S1 alpha 是否仍存在
+**修订（2026-05-08 sweep 之后）**：
+
+- [x] ~~SOL ablation~~ → 已做（NO_SOL 仍 CAGR +83.46%，alpha 仅部分依赖 SOL）
+- [ ] **优先 1（修订 后）**：V2-S4 crypto_momentum_tilt dedicated 验证 —— sweep 显示它在 top_5/10 是冠军（Sharpe 1.51/1.42, NAV 3.1M/3.8M），与 V1 完全相反，需要专门写 idea/impl/validation/conclusion
+- [ ] **优先 2**：修 S7v2 USDT 工程问题（panel 加 const USDT），跑 V2-S2 BTC MA filter
+- [ ] **优先 3**：V2-S3 trend_tilt dedicated（sweep 显示 MaxDD 从 -78% 砍到 -30%，但 CAGR 损失 67 pct，risk profile 切换）
 - [ ] **优先 4**：4h 频率重测 —— crypto 24/7 + 高波动可能让 4h 比 1d 更适合
 - [ ] **优先 5（等数据）**：2025+ OOS 测试
 

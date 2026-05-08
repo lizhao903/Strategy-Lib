@@ -265,10 +265,24 @@ CRYPTO_BTC_ETH_2 = Universe(
     extra_tags=("v2_crypto", "spot"),
 )
 
+CRYPTO_TOP_5_NO_SOL = Universe(
+    name="crypto_top_5_no_sol",
+    symbols=("BTC/USDT", "ETH/USDT", "BNB/USDT", "XRP/USDT"),  # 4 只，剔除 SOL
+    market="crypto",
+    cash_proxy="USDT",
+    benchmark="BTC/USDT",
+    description=(
+        "Crypto V2-S1 robustness 测试：从 TOP_5 剔除 SOL，验证 V2-S1 +118% CAGR alpha 是否依赖单一 100x outlier"
+    ),
+    warmup_days=120,
+    extra_tags=("v2_crypto", "spot", "ablation"),
+)
+
 ALL_CRYPTO_UNIVERSES: tuple[Universe, ...] = (
     CRYPTO_BTC_ETH_2,
     CRYPTO_TOP_3,
     CRYPTO_TOP_5,
+    CRYPTO_TOP_5_NO_SOL,
     CRYPTO_TOP_10,
 )
 
@@ -310,6 +324,7 @@ __all__ = [
     "CRYPTO_BTC_ETH_2",
     "CRYPTO_TOP_3",
     "CRYPTO_TOP_5",
+    "CRYPTO_TOP_5_NO_SOL",
     "CRYPTO_TOP_10",
     "UNIVERSE_REGISTRY",
     "Universe",
