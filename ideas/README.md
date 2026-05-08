@@ -51,4 +51,5 @@ ideas/
 - [S9 crypto_basket_equal](S9_crypto_basket_equal/v1/idea.md) (V2-S1) — Crypto 头部 5 只等权（BTC/ETH/SOL/BNB/XRP）— **shipped (in-sample)** Sharpe **1.41** / NAV 22.8x / vs BTC BH **+84.84%/yr**；2022 -71% / OOS 风险大
 - [S10 crypto_momentum_tilt](S10_crypto_momentum_tilt/v1/idea.md) (V2-S4) — V1 S4v2 横截面动量倾斜套到 Crypto TOP_5 — **shipped (in-sample, outlier-dependent)** Sharpe **1.51** / NAV 31.4x / vs BTC BH **+102.93%/yr** / vs V2-S1 **+18.08%/yr**；NO_SOL ablation 翻负证 alpha 高度依赖 SOL outlier
 - [S11 crypto_btc_ma_filter](S11_crypto_btc_ma_filter/v1/idea.md) (V2-S2) — V1 S7v2 BTC 200日MA 二元 ON/OFF 套到 Crypto TOP_5（推荐 MA=100）— **shipped (in-sample, MA-tuned)** Sharpe **★1.95** / NAV 35.1x / MaxDD **★-43.4%** / 2022 单年 **0.0%**；**核心发现：crypto 最佳 MA=100 而非 V1 默认 200**；timing 在 crypto 比 A 股显著有效；含 USDT 合成工程修复
+- [S12 crypto_trend_tilt](S12_crypto_trend_tilt/v1/idea.md) (V2-S3) — V1 S5v2 连续趋势 + vol filter 套到 Crypto — **shelved (risk profile shifter)** Sharpe 1.37 / NAV 3.77x / MaxDD **★-34.6%**（V2 系列最低）；Calmar 1.14 输给 V2-S1 / V2-S2 / V2-S4；vol_high=0.30 (V1 默认) 偶然在 crypto 仍最优；niche use only
 <!-- 索引结束 -->
