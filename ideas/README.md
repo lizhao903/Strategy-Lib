@@ -49,4 +49,5 @@ ideas/
 - [S7 cn_etf_market_ma_filter](S7_cn_etf_market_ma_filter/v1/idea.md) — 510300 200MA 二元 ON/OFF — v1 shelved (lag=2 6池) / **v2 shipped** (lag=1 11池, MaxDD -17.5% 最佳；但 vs S3 11池 baseline -2.66%/yr → 揭示 S8 候选)
 - [S8 cn_etf_overseas_equal](S8_cn_etf_overseas_equal/v1/idea.md) — S3 等权 + 4 池（恒生+纳指+标普500+黄金，**无 A 股**）— validating（Sharpe **0.85** 全维度第一，OOS 风险高，未做 dedicated run）
 - [S9 crypto_basket_equal](S9_crypto_basket_equal/v1/idea.md) (V2-S1) — Crypto 头部 5 只等权（BTC/ETH/SOL/BNB/XRP）— **shipped (in-sample)** Sharpe **1.41** / NAV 22.8x / vs BTC BH **+84.84%/yr**；2022 -71% / OOS 风险大
+- [S10 crypto_momentum_tilt](S10_crypto_momentum_tilt/v1/idea.md) (V2-S4) — V1 S4v2 横截面动量倾斜套到 Crypto TOP_5 — **shipped (in-sample, outlier-dependent)** Sharpe **1.51** / NAV 31.4x / vs BTC BH **+102.93%/yr** / vs V2-S1 **+18.08%/yr**；NO_SOL ablation 翻负证 alpha 高度依赖 SOL outlier
 <!-- 索引结束 -->

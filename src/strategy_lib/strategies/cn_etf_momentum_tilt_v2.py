@@ -112,6 +112,19 @@ class MomentumTiltV2Strategy(EqualRebalanceStrategy):
         if signal not in ("raw", "vol_adj"):
             raise ValueError(f"signal 必须是 'raw' 或 'vol_adj'，得到 {signal}")
 
+        # 小 N 池自适应：默认 (0.03, 0.30) 是按 N=11 调过的
+        # （0.03*11=0.33, 0.30*11=3.3 包住 1.0）。当 N<5 时 0.30*N<1.0 会
+        # 触发 ``w_max*N<1`` 矛盾。这里在用户没有显式覆盖时按 N 自动放宽，
+        # 让 crypto V2-S4 (BTC/ETH 双标 / TOP_3) 能跑通。
+        n_syms = len(symbols)
+        if n_syms >= 2:
+            if w_max * n_syms < 1.0:
+                # 让 w_max 至少能撑起单资产 100%（N=2 → 1.0；N=3 → 0.7；N=4 → 0.5）
+                auto_w_max = max(w_max, 1.0 / max(n_syms - 1, 1))
+                w_max = min(auto_w_max, 1.0)
+            if w_min * n_syms > 1.0:
+                w_min = max(0.0, 1.0 / (n_syms * 2))
+
         self.lookback = lookback
         self.skip = skip
         self.secondary_lookback = secondary_lookback
