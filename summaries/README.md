@@ -69,6 +69,7 @@ summaries/
 | **S8** | [v1 cn_etf_overseas_equal](S8_cn_etf_overseas_equal/v1/) | **★171.3k** | **★+11.87%** | **★0.851** | -20.9% | (基准 ~) | **★+11.01%** | validating\*\*\*\*\* |
 | **S9** | [v1 crypto_basket_equal](S9_crypto_basket_equal/v1/) (V2-S1) | **2,282.6k**\*\*\*\*\*\* | **+118.46%** | **1.410** | -78.9% | (跨市场) | **+84.84%** vs BTC BH | shipped (in-sample) |
 | **S10** | [v1 crypto_momentum_tilt](S10_crypto_momentum_tilt/v1/) (V2-S4) | **3,138.2k** | **+136.55%** | **1.511** | -77.1% | +18.08% vs V2-S1 | **+102.93%** vs BTC BH | shipped (in-sample, outlier-dependent) |
+| **S11** | [v1 crypto_btc_ma_filter](S11_crypto_btc_ma_filter/v1/) (V2-S2, MA=100) | **3,511.7k** | **+143.28%** | **★1.951** | **★-43.4%** | +24.82% vs V2-S1 | **+109.66%** vs BTC BH | shipped (in-sample, MA-tuned) |
 
 > S5v1 shelved\* 原因：超额来自 2024 单边而非 2022 避险（cash 与下跌相关性 0.033）
 > S5v2 shelved\*\* 原因：避险数据兑现（2022 -7.6% vs v1 -21.6%、MaxDD 砍半），但 Sharpe 持平 0.28 没产生新 alpha；bond overlay 占 37% 仓位漂移成股债混合
@@ -77,6 +78,7 @@ summaries/
 > S8 validating\*\*\*\*\* 全维度第一（NAV 171.3k / Sharpe 0.85）但样本来自 universe_sweep_demo，未做专门 dedicated run；OOS 风险大（2020-2024 是「A 股最弱+美股最强」窗口），**ship 前必须 OOS**
 > S9 shipped(in-sample)\*\*\*\*\*\* 单位 USDT；窗口 2021-2024 (4y)；**alpha 主要来自 2021 SOL 100x**，去 SOL 后 crypto_btc_eth_2 仅 +43% CAGR；OOS 风险高；2022 -71% 单年回撤反映 crypto 内部相关性高（等权 ≠ 真多元化）
 > S10 shipped(in-sample, outlier-dependent) 单位 USDT；窗口 2021-2024 (4y)；**alpha 拆分：83% 来自池子+等权（V2-S1 已吃下），momentum 信号增量仅 17%（+18 pp/yr）**；NO_SOL ablation 翻负（-2.19 pp）证明信号 alpha 高度依赖 SOL outlier；TOP_10 alpha (+30 pp) > TOP_5 (+18 pp) 反映横截面分散度 → z-score 信息密度的正向关系
+> S11 shipped(in-sample, MA-tuned) **V2 系列 risk-eff 最佳**：Sharpe **1.951** + MaxDD **-43.4%** + 2022 单年 **0.0%**（全年 OFF）；**关键发现：crypto 最佳 MA=100，V1 默认 200 在 crypto 错误**（CAGR 144% vs 45%）；**timing 在 crypto 比 A 股显著有效**（V1 S7v2 A 股 alpha +1.5 pp vs V2-S2 crypto +24.8 pp）；如果只 ship 一个 V2 策略应当是 V2-S2
 
 **v1 → v2 跨版本核心学习**：
 1. **S2v2 失败的发现 > S2v2 成功的指标**：「DCA 框架下追求对称做T 是矛盾命题」——只要 DCA 净流入存在，上沿偏置结构性不可消除
