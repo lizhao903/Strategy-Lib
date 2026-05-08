@@ -26,6 +26,32 @@
 3. **验证**：notebook 跑 IC / 分组 / 回测，结果按日期**追加**到 `summaries/<slug>/validation.md`（不要覆盖历史），图表存 `summaries/<slug>/artifacts/`
 4. **结论**：策略状态确定（上线/废弃/搁置）时写 `summaries/<slug>/conclusion.md`，并在 `summaries/README.md` 索引追加一行
 
+## 无脑快速验证（quickrun）
+
+**最简路径**——一行 Python 或一行 CLI 跑任意标的池，自动推断 market / cash / benchmark：
+
+```python
+from strategy_lib import quickrun
+
+quickrun("BTC/USDT,ETH/USDT,SOL/USDT")                           # 含 / → crypto，自动 USDT cash + BTC bench
+quickrun(["510300", "510500", "159915"], strategies=["S3", "S4v2"])  # 6 位数字 → cn_etf
+quickrun("AAPL,MSFT,GOOG", strategies=["S3", "S5v2"])            # 字母 → us_stock
+```
+
+CLI:
+```bash
+slib quickrun --symbols 'BTC/USDT,ETH/USDT,SOL/USDT' --strategies 'S3,S4v2,S5v2'
+slib quickrun --symbols '513100,518880,159920,513500'    # 复现 S8 cn_etf_overseas
+slib quickrun --symbols 'AAPL,MSFT' --benchmark SPY --since 2022-01-01
+```
+
+输出（自动保存到 `results/quickrun_<ts>/`）:
+- `summary.md` — 标准报告（包含 BH 对比）
+- `results.csv` — 长格式数据
+- stdout 含 strategy 对比表
+
+适用场景：日常想"换组标的看哪个策略好"——3 秒内出结果，不写代码。
+
 ## 快速切换标的池（Universe + Sweep）
 
 不要在 validate.py / notebook 里硬编码 symbol list。用 `Universe` 抽象：
